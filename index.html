@@ -67,12 +67,25 @@ html:not(.js) .nav{position:absolute}
 .scene{position:relative;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;align-items:center;text-align:center;
   padding:clamp(6rem,13vh,8.5rem) var(--pad) 0;overflow:hidden;overflow:clip}
 html:not(.js) .scene{--bg:var(--s-bg);--ink:var(--s-ink);--acc:var(--s-acc);background:var(--bg);color:var(--ink)}
+
+/* A held scene stays put while you scroll through it, so there is time to take it in.
+   The track is taller than the screen and the content sticks to the window.
+     --e (0 to 1): how far the scene has opened. It arrives as a name on a colour, then the
+                   title settles smaller and the thing itself grows into place.
+     --c (0 to 1): runs through the back half, for anything that keeps moving once it is open.
+   --dwell is how much extra scrolling each scene gets. */
+.scene.hold{--dwell:105vh;display:block;min-height:0;height:calc(100vh + var(--dwell));height:calc(100svh + var(--dwell));padding:0;overflow:visible}
+@media (max-width:820px){.scene.hold{--dwell:85vh}}
+.pin{position:sticky;top:0;height:100vh;height:100svh;display:flex;flex-direction:column;align-items:center;padding:clamp(4.5rem,12vh,7.5rem) var(--pad) 0;overflow:hidden}
+html:not(.js) .scene.hold,.still .scene.hold{height:auto}
+html:not(.js) .pin,.still .pin{position:static;height:auto;min-height:100vh;min-height:100svh}
+
 .txt{margin-top:auto;max-width:100%}
 .bleed .txt{margin-bottom:auto}
 .kind{display:inline-flex;align-items:center;gap:.6em;font-size:.95rem;font-weight:500;line-height:1.2;margin-bottom:1.3rem}
 .kind i{flex:none;width:.6rem;height:.6rem;background:var(--acc);border-radius:1px}
-.title{font-size:clamp(3rem,15.5vw,5rem);letter-spacing:-.05em;line-height:.9;text-wrap:balance}
-@media (min-width:641px){.title{font-size:clamp(4rem,9.2vw,8.25rem)}}
+.title{--big:clamp(3rem,15.5vw,5rem);--small:min(var(--big),9vh);font-size:calc(var(--big) + (var(--small) - var(--big))*var(--e,1));letter-spacing:-.05em;line-height:.9;text-wrap:balance}
+@media (min-width:641px){.title{--big:clamp(4rem,9.2vw,8.25rem)}}
 .title.mid{font-size:clamp(2.3rem,6vw,5rem);letter-spacing:-.05em;line-height:.96}
 .pop .title{color:var(--acc)}
 .sum{max-width:35rem;margin:1.5rem auto 0;font-weight:400;font-size:clamp(1.05rem,1.35vw,1.22rem);opacity:.84;text-wrap:balance}
@@ -100,24 +113,31 @@ html:not(.js) .scene{--bg:var(--s-bg);--ink:var(--s-ink);--acc:var(--s-acc);back
   .down{display:none}
 }
 
-/* Kitchen Table: a hand of real worksheets */
-.fan{--fan:1;--pw:clamp(9.2rem,19vw,16.5rem);display:flex;justify-content:center;align-items:flex-start;flex:none;height:calc(var(--pw)*1.04);margin-top:clamp(2.5rem,6vh,4.5rem)}
-.fan img{position:relative;z-index:var(--z);flex:none;width:var(--pw);height:auto;aspect-ratio:540/688;margin:0 clamp(-3.2rem,-4.6vw,-1.9rem);
+/* Kitchen Table: a hand of real worksheets. They start as a deck peeking over the bottom edge,
+   then come up and fan out as the scene opens. */
+.fan{--spread:1;--pw:clamp(9.2rem,19vw,16.5rem);--gap:clamp(-3.2rem,-4.6vw,-1.9rem);--step:calc(var(--pw) + 2*var(--gap));
+  display:flex;justify-content:center;align-items:flex-start;flex:none;height:calc(var(--pw)*1.04*(.15 + .85*var(--e,1)));margin-top:clamp(2rem,5vh,3.5rem)}
+.fan img{position:relative;z-index:var(--z);flex:none;width:var(--pw);height:auto;aspect-ratio:540/688;margin:0 var(--gap);
   background:#fff;border-radius:3px;box-shadow:0 0 0 1px rgba(23,82,75,.08),0 22px 44px -22px rgba(23,82,75,.5);transform-origin:50% 125%;will-change:transform;
-  transform:translateY(calc((1 - var(--p,1))*5rem)) rotate(calc(var(--r)*var(--p,1)*var(--fan)))}
-@media (max-width:640px){.fan{--fan:.62}}
+  transform:translateX(calc(var(--i)*var(--step)*-.72*(1 - var(--e,1)))) rotate(calc(var(--i)*7.5deg*(var(--e,1) + .16*var(--c,0))*var(--spread)))}
+@media (max-width:640px){.fan{--spread:.62}}
 
-/* Nudge: the phone comes up from the bottom edge */
-.dock{flex:none;height:clamp(16rem,40vh,25rem);margin-top:clamp(2.5rem,6vh,4rem)}
-.phone{width:clamp(14.5rem,22vw,19rem);border:.4rem solid #26332F;border-bottom:0;border-radius:2.3rem 2.3rem 0 0;overflow:hidden;background:#0B100F;will-change:transform;
-  transform:translateY(calc((1 - var(--p,1))*6rem))}
-.phone img{width:100%}
+/* Nudge: the phone comes up from the bottom edge, then the chat scrolls on inside it */
+.dock{flex:none;height:calc(clamp(16rem,40vh,25rem)*(.2 + .8*var(--e,1)));margin-top:clamp(2rem,5vh,3.5rem)}
+.phone{--phw:clamp(16rem,22vw,19rem);--phh:clamp(17.5rem,43vh,27rem);width:var(--phw);height:var(--phh);border:.4rem solid #26332F;border-bottom:0;border-radius:2.3rem 2.3rem 0 0;overflow:hidden;background:#0B100F}
+.phone img{width:100%;will-change:transform;   /* scrolls exactly as far as the screenshot is taller than the phone */
+  transform:translateY(calc(var(--c,0)*-1*max(0px,(var(--phw) - .8rem)*1.7778 - var(--phh) + .4rem)))}
 
-/* games and reels: one big screen */
-.wide{padding-bottom:clamp(4rem,9vh,6.5rem)}
-.stage-wrap{width:100%;display:flex;justify-content:center;margin:clamp(2.5rem,6vh,4rem) 0 auto}
-.stage{position:relative;width:min(100%,62rem,max(30rem,calc((100vh - 25rem)*1.7778)));aspect-ratio:16/9;border-radius:clamp(.8rem,1.5vw,1.4rem);overflow:hidden;background:#000;
-  will-change:transform;transform:scale(calc(.93 + .07*var(--p,1)))}
+/* games and reels: the screen grows out from under the title until it owns the window */
+.wide{--sw:min(100vw - 2*var(--pad),62rem,max(18rem,(100vh - 9vh - clamp(4.5rem,12vh,7.5rem) - 12.6rem)*1.7778))}
+.wide .pin{padding-bottom:clamp(1.8rem,5vh,3rem)}
+.stage-wrap{width:100%;display:flex;justify-content:center;align-items:flex-start;flex:none;height:calc(var(--sw)*.5625*var(--e,1));margin:calc(clamp(1.6rem,4vh,2.4rem)*var(--e,1)) 0 auto}
+.stage{position:relative;flex:none;width:var(--sw);height:calc(var(--sw)*.5625);border-radius:clamp(.8rem,1.5vw,1.4rem);overflow:hidden;background:#000;
+  will-change:transform;transform-origin:50% 0;transform:scale(var(--e,1));opacity:calc(var(--e,1)*4)}
+@media (min-width:821px){   /* on a wide screen the two-line blurb folds away as the screen grows, so the video gets the room */
+  .wide .sum{overflow:hidden;height:calc(2.95em*(1 - var(--e,1)));margin-top:calc(1.5rem*(1 - var(--e,1)));opacity:calc(.84 - var(--e,1)*1.4)}
+  html:not(.js) .wide .sum,.still .wide .sum{height:auto;margin-top:1.5rem;opacity:.84}
+}
 .stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .snd{position:absolute;right:.8rem;bottom:.8rem;min-height:2.3rem;padding:0 .95rem;border-radius:99px;border:0;background:rgba(0,0,0,.62);color:#fff;font-weight:500;font-size:.85rem;cursor:pointer;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .snd[aria-pressed=true]{background:#fff;color:#000}
@@ -131,8 +151,8 @@ html:not(.js) .scene{--bg:var(--s-bg);--ink:var(--s-ink);--acc:var(--s-acc);back
 .reels .stage video{opacity:0;pointer-events:none;transition:opacity .35s}
 .reels .stage video.on{opacity:1;pointer-events:auto}
 
-/* the 9 to 5: one number at a time */
-.wins{justify-content:center;padding-bottom:clamp(3rem,8vh,5rem)}
+/* the 9 to 5: one number at a time, and scrolling through turns to the next */
+.wins .pin{justify-content:center;padding-bottom:clamp(3rem,8vh,5rem)}
 .wins .kind{margin-bottom:0}
 .fig{display:block;font-size:clamp(7rem,36vw,24rem);font-weight:500;letter-spacing:-.07em;line-height:.84;color:var(--acc);margin:.08em 0 .1em;font-variant-numeric:tabular-nums}
 .win strong{display:block;font-size:clamp(1.5rem,3vw,2.5rem);font-weight:500;letter-spacing:-.04em;line-height:1.05}
@@ -208,10 +228,10 @@ textarea{min-height:5.5rem;resize:vertical}
 
 <main>
 
-  <section class="scene bleed" id="kt" data-scene style="--s-bg:#F3ECDD;--s-ink:#17524B;--s-acc:#C7511F">
+  <section class="scene hold bleed" id="kt" data-scene style="--s-bg:#F3ECDD;--s-ink:#17524B;--s-acc:#C7511F"><div class="pin">
     <div class="txt">
       <p class="kind"><i></i>01 · App</p>
-      <h2 class="title">Kitchen Table Worksheets</h2>
+      <h2 class="title">Kitchen Table<br>Worksheets</h2>
       <p class="sum">Printable worksheets for pre-K to grade 8. Every sheet is made fresh when you print it, and the answer key comes with it.</p>
       <div class="links">
         <a class="btn main" href="https://ktworksheets.com" target="_blank" rel="noopener">ktworksheets.com</a>
@@ -219,16 +239,16 @@ textarea{min-height:5.5rem;resize:vertical}
         <a class="btn" href="https://www.etsy.com/shop/KitchenTableWorkbook" target="_blank" rel="noopener">Etsy shop</a>
       </div>
     </div>
-    <div class="fan" data-rise role="img" aria-label="Five Kitchen Table worksheets: place value, states of matter, letter tracing, map reading and number tracing">
-      <img src="work/sheet-2.jpg" alt="" loading="lazy" style="--r:-15deg;--z:1">
-      <img src="work/sheet-4.jpg" alt="" loading="lazy" style="--r:-7.5deg;--z:2">
-      <img src="work/sheet-3.jpg" alt="" loading="lazy" style="--r:0deg;--z:3">
-      <img src="work/sheet-5.jpg" alt="" loading="lazy" style="--r:7.5deg;--z:2">
-      <img src="work/sheet-1.jpg" alt="" loading="lazy" style="--r:15deg;--z:1">
+    <div class="fan" role="img" aria-label="Five Kitchen Table worksheets: place value, states of matter, letter tracing, map reading and number tracing">
+      <img src="work/sheet-2.jpg" alt="" style="--i:-2;--z:1">
+      <img src="work/sheet-4.jpg" alt="" style="--i:-1;--z:2">
+      <img src="work/sheet-3.jpg" alt="" style="--i:0;--z:3">
+      <img src="work/sheet-5.jpg" alt="" style="--i:1;--z:2">
+      <img src="work/sheet-1.jpg" alt="" style="--i:2;--z:1">
     </div>
-  </section>
+  </div></section>
 
-  <section class="scene bleed pop" id="nudge" data-scene style="--s-bg:#0B100F;--s-ink:#EEF4F1;--s-acc:#3EE6A8">
+  <section class="scene hold bleed pop" id="nudge" data-scene style="--s-bg:#0B100F;--s-ink:#EEF4F1;--s-acc:#3EE6A8"><div class="pin">
     <div class="txt">
       <p class="kind"><i></i>02 · App</p>
       <h2 class="title">Nudge</h2>
@@ -238,42 +258,42 @@ textarea{min-height:5.5rem;resize:vertical}
         <a class="btn" href="https://apps.apple.com/app/id6827351985" target="_blank" rel="noopener">App Store</a>
       </div>
     </div>
-    <div class="dock" data-rise>
-      <div class="phone"><img src="work/nudge-phone.jpg" alt="The Nudge app: a chat where the coach sets check-in times for a running goal" loading="lazy"></div>
+    <div class="dock">
+      <div class="phone"><img src="work/nudge-phone.jpg" alt="The Nudge app: a chat where the coach sets check-in times for a running goal"></div>
     </div>
-  </section>
+  </div></section>
 
-  <section class="scene wide" id="cloud-gazing" data-scene style="--s-bg:#BFE1F6;--s-ink:#12324F;--s-acc:#FFFFFF">
+  <section class="scene hold wide" id="cloud-gazing" data-scene style="--s-bg:#BFE1F6;--s-ink:#12324F;--s-acc:#FFFFFF"><div class="pin">
     <div class="txt">
       <p class="kind"><i></i>03 · Roblox game</p>
       <h2 class="title">Cloud Gazing</h2>
       <p class="sum">Lie on a hill and fill your Cloud Book. Every server's sky runs on live weather from a real place.</p>
       <div class="links"><a class="btn main" href="https://www.roblox.com/games/82963087289308" target="_blank" rel="noopener">Play on Roblox</a></div>
     </div>
-    <div class="stage-wrap" data-rise><div class="stage"><video src="work/cloud-gazing.mp4" poster="work/cloud-gazing.jpg" preload="none" muted loop playsinline controls></video></div></div>
-  </section>
+    <div class="stage-wrap"><div class="stage"><video src="work/cloud-gazing.mp4" poster="work/cloud-gazing.jpg" preload="none" muted loop playsinline controls></video></div></div>
+  </div></section>
 
-  <section class="scene wide pop" id="ashwick" data-scene style="--s-bg:#1A1030;--s-ink:#EFE9F7;--s-acc:#FFB648">
+  <section class="scene hold wide pop" id="ashwick" data-scene style="--s-bg:#1A1030;--s-ink:#EFE9F7;--s-acc:#FFB648"><div class="pin">
     <div class="txt">
       <p class="kind"><i></i>04 · Roblox game</p>
       <h2 class="title">Ashwick Survivors</h2>
       <p class="sum">Pixel-art survivors that turns into an action RPG: waves, loot, and a dungeon underneath.</p>
       <div class="links"><a class="btn main" href="https://www.roblox.com/games/114819087690317" target="_blank" rel="noopener">Play on Roblox</a></div>
     </div>
-    <div class="stage-wrap" data-rise><div class="stage"><video src="work/ashwick.mp4" poster="work/ashwick.jpg" preload="none" muted loop playsinline controls></video></div></div>
-  </section>
+    <div class="stage-wrap"><div class="stage"><video src="work/ashwick.mp4" poster="work/ashwick.jpg" preload="none" muted loop playsinline controls></video></div></div>
+  </div></section>
 
-  <section class="scene wide" id="bit-brawl" data-scene style="--s-bg:#FFC42E;--s-ink:#171A4D;--s-acc:#E8352B">
+  <section class="scene hold wide" id="bit-brawl" data-scene style="--s-bg:#FFC42E;--s-ink:#171A4D;--s-acc:#E8352B"><div class="pin">
     <div class="txt">
       <p class="kind"><i></i>05 · Roblox game</p>
       <h2 class="title">Bit Brawl</h2>
       <p class="sum">A pixel platform fighter: combos, outfits, and a five-level adventure mode.</p>
       <div class="links"><a class="btn main" href="https://www.roblox.com/games/95081502445110" target="_blank" rel="noopener">Play on Roblox</a></div>
     </div>
-    <div class="stage-wrap" data-rise><div class="stage"><video src="work/bit-brawl.mp4" poster="work/bit-brawl.jpg" preload="none" muted loop playsinline controls></video></div></div>
-  </section>
+    <div class="stage-wrap"><div class="stage"><video src="work/bit-brawl.mp4" poster="work/bit-brawl.jpg" preload="none" muted loop playsinline controls></video></div></div>
+  </div></section>
 
-  <section class="scene wide reels" id="reels" data-scene style="--s-bg:#0F0F13;--s-ink:#F6F1E5;--s-acc:#FFD43D">
+  <section class="scene hold wide reels" id="reels" data-scene style="--s-bg:#0F0F13;--s-ink:#F6F1E5;--s-acc:#FFD43D"><div class="pin">
     <div class="txt">
       <h2 class="title mid">Motion videos, made in code.</h2>
       <div class="tabs" role="tablist" aria-label="Pick a video">
@@ -282,18 +302,18 @@ textarea{min-height:5.5rem;resize:vertical}
         <button type="button" role="tab" aria-selected="false">CarrierCents <span>App walkthrough</span></button>
       </div>
     </div>
-    <div class="stage-wrap" data-rise><div class="stage">
+    <div class="stage-wrap"><div class="stage">
       <video class="on" src="work/nudge-reel.mp4" poster="work/nudge-reel.jpg" preload="none" muted playsinline controls></video>
       <video src="work/kt-reel.mp4" poster="work/kt-reel.jpg" preload="none" muted playsinline controls></video>
       <video src="work/carriercents-reel.mp4" poster="work/carriercents-reel.jpg" preload="none" muted playsinline controls></video>
     </div></div>
-  </section>
+  </div></section>
 
-  <section class="scene wins" id="day" data-scene style="--s-bg:#F6F1E5;--s-ink:#161B6E;--s-acc:#2937E0">
+  <section class="scene hold wins" id="day" data-scene style="--s-bg:#F6F1E5;--s-ink:#161B6E;--s-acc:#2937E0"><div class="pin">
     <h2 class="kind"><i></i>Wins from the 9 to 5</h2>
     <div class="win" id="win"><b class="fig"></b><strong></strong><span class="why"></span></div>
     <div class="winnav"><span id="dayn"></span><i id="dayt"></i><button class="btn sm" id="daynext" type="button">Next win</button></div>
-  </section>
+  </div></section>
 
   <section class="scene hire" id="hire" data-scene style="--s-bg:#F6F1E5;--s-ink:#161B6E;--s-acc:#2937E0">
     <h2 class="title mid">Want one of these built?</h2>
@@ -361,7 +381,9 @@ const hex=h=>{h=h.trim().slice(1);if(h.length===3)h=h.replace(/./g,"$&$&");const
 const rgb=c=>"rgb("+Math.round(c[0])+","+Math.round(c[1])+","+Math.round(c[2])+")";
 const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
 const scenes=[...document.querySelectorAll("[data-scene]")].map(el=>{const s=getComputedStyle(el),g=k=>hex(s.getPropertyValue(k));return{el,bg:g("--s-bg"),ink:g("--s-ink"),acc:g("--s-acc")}});
-const rises=[...document.querySelectorAll("[data-rise]")];
+const holds=[...document.querySelectorAll(".scene.hold")].map(el=>({el,pin:el.querySelector(".pin"),beat:-1}));
+if(calm)root.classList.add("still");           // reduced motion: no holding, every scene sits open
+else holds.forEach(h=>h.el.style.setProperty("--e","0"));
 const themeMeta=document.querySelector('meta[name="theme-color"]');
 const KEYS=["bg","ink","acc"];
 const tone={bg:scenes[0].bg.slice(),ink:scenes[0].ink.slice(),acc:scenes[0].acc.slice()};
@@ -385,14 +407,21 @@ function paint(){
   queued=false;
   const vh=innerHeight,probe=scrollY+vh*.55;
   let k=0;while(k<scenes.length-1&&scenes[k+1].el.offsetTop<=probe)k++;
-  /* media rises into place as it arrives */
-  const ps=rises.map(el=>{const r=el.getBoundingClientRect();return r.bottom<-300||r.top>vh+300?-1:calm?1:clamp((vh-r.top)/(vh*.38),0,1)});
+  /* how far through each held scene we are (read everything first, write after) */
+  const qs=holds.map(h=>{const top=h.el.offsetTop,tall=h.el.offsetHeight,room=tall-h.pin.offsetHeight;
+    return room<8||scrollY<top-vh*1.5||scrollY>top+tall+vh*.5?-1:clamp((scrollY-top)/room,0,1)});
   if(k!==goal){
     const jump=goal<0||calm;goal=k;
     if(jump){for(const key of KEYS)tone[key]=scenes[k][key].slice();setTone()}
     else if(!toning){toneAt=performance.now();toning=requestAnimationFrame(drift)}
   }
-  rises.forEach((el,i)=>{if(ps[i]>=0)el.style.setProperty("--p",(1-Math.pow(1-ps[i],3)).toFixed(3))});
+  holds.forEach((h,i)=>{
+    const q=qs[i];if(q<0)return;
+    let e=clamp(q/.58,0,1);e=e*e*(3-2*e);       // open over the first part of the hold, then rest
+    h.el.style.setProperty("--e",e.toFixed(4));
+    h.el.style.setProperty("--c",clamp((q-.45)/.55,0,1).toFixed(4));
+    if(h.el.id==="day"){const b=Math.min(2,q*3|0);if(b!==h.beat){if(h.beat>=0)showWin();h.beat=b}}   // the wins turn as you scroll through
+  });
 }
 function ask(){if(!queued){queued=true;requestAnimationFrame(paint)}}
 addEventListener("scroll",ask,{passive:true});
