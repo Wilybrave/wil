@@ -151,6 +151,17 @@ h1,h2,h3{font-family:var(--display);font-weight:800;letter-spacing:-.03em;line-h
 .daynav i::after{content:"";display:block;height:100%;background:var(--accent);transform-origin:0 50%;transform:scaleX(var(--t,0))}
 @keyframes flip{from{opacity:0;transform:translateY(1.2rem)}to{opacity:1;transform:none}}
 
+/* the offer */
+.offer p.lead{max-width:34rem;color:var(--muted);font-size:clamp(1rem,1.5vw,1.15rem);margin:-.6rem 0 1.6rem}
+.menu{border-top:1.5px solid var(--edge)}
+.menu button{display:grid;grid-template-columns:1fr auto;gap:.2rem 1rem;align-items:center;width:100%;text-align:left;background:none;border:0;border-bottom:1.5px solid var(--edge);
+  color:inherit;padding:1.25rem .25rem;cursor:pointer;transition:padding .25s cubic-bezier(.16,1,.3,1),background .25s}
+.menu h3{font-size:clamp(1.6rem,4.2vw,2.8rem);transition:color .2s}
+.menu span{color:var(--muted);font-size:.95rem;grid-column:1}
+.menu b{grid-row:1/3;grid-column:2;font-family:var(--display);font-size:clamp(1rem,2vw,1.35rem);white-space:nowrap;display:flex;align-items:center;gap:.7rem}
+.menu b::after{content:"→";color:var(--accent);transition:transform .2s}
+@media (hover:hover){.menu button:hover{padding-left:1rem;padding-right:1rem;background:color-mix(in srgb,var(--accent) 8%,transparent)}.menu button:hover h3{color:var(--accent)}.menu button:hover b::after{transform:translateX(5px)}}
+
 /* foot */
 footer{text-align:center;padding:6rem 1rem 3rem;overflow:hidden}
 footer h2{font-size:clamp(4.5rem,21vw,15rem);line-height:.85;margin-bottom:2rem}
@@ -201,7 +212,7 @@ textarea{min-height:6rem;resize:vertical}
     <p>Hey, I'm Wil. Developer by day, dad of two. Five of those things are live right now. Go poke at them.</p>
     <div class="pills">
       <a class="pill main big" href="#apps">See what's live</a>
-      <a class="xlink" href="https://x.com/wilcodes" target="_blank" rel="noopener">@wilcodes on X</a>
+      <a class="xlink" href="#hire">Hire me</a>
     </div>
   </div>
 </header>
@@ -284,6 +295,17 @@ textarea{min-height:6rem;resize:vertical}
   <div class="head rv"><h2>Wins from the 9 to 5.</h2></div>
   <div class="day rv" id="day"><b></b><div><strong></strong><span></span></div></div>
   <div class="daynav"><span id="dayn"></span><i id="dayt"></i><button class="pill" id="daynext" type="button">Next win</button></div>
+
+  <section class="offer" id="hire">
+    <div class="head rv"><h2>Want one of these built?</h2></div>
+    <p class="lead rv">I take on a small number of client builds. You've just scrolled past the proof. Pick one and tell me what you have in mind.</p>
+    <div class="menu rv">
+      <button type="button" data-contact="a promo reel"><h3>A promo reel</h3><span>A motion video for your app, product or game. Landscape and vertical.</span><b>from $95</b></button>
+      <button type="button" data-contact="an app"><h3>An app</h3><span>iOS, Android or web, from the first screen to the store.</span><b>from $500</b></button>
+      <button type="button" data-contact="a Roblox game"><h3>A Roblox game</h3><span>A custom game, built once and published to your group.</span><b>from $500</b></button>
+      <button type="button" data-contact="a website"><h3>A website</h3><span>Landing pages, storefronts, booking. Built and hosted.</span><b>get a quote</b></button>
+    </div>
+  </section>
 
 </main>
 
@@ -400,7 +422,11 @@ if(!calm)(function loop(now){
 /* Contact: posts to the existing wilzil.dev lead endpoint (emails Wil, sends the visitor a short thanks). */
 const dlg=document.getElementById("contact"),form=document.getElementById("form"),note=document.getElementById("note"),send=document.getElementById("send");
 const ENDPOINT="https://wilzil.dev/api/contact",FALLBACK="wil@wilzil.dev";
-document.querySelectorAll("[data-contact]").forEach(b=>b.addEventListener("click",()=>{note.textContent="";dlg.showModal()}));
+document.querySelectorAll("[data-contact]").forEach(b=>b.addEventListener("click",()=>{
+  note.textContent="";const want=b.dataset.contact,m=document.getElementById("m");
+  if(want&&!m.value.trim())m.value="I'd like "+want+". ";      // came from the offer list
+  dlg.showModal();
+}));
 document.getElementById("close").addEventListener("click",()=>dlg.close());
 dlg.addEventListener("click",e=>{if(e.target===dlg)dlg.close()});
 form.addEventListener("submit",async e=>{
