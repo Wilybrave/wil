@@ -163,6 +163,7 @@ html:not(.js) .pin,.still .pin{position:static;height:auto;min-height:100vh;min-
 .tabs span{font-size:.82em;font-weight:400;opacity:.7}
 .reels .stage video{opacity:0;pointer-events:none;transition:opacity .35s}
 .reels .stage video.on{opacity:1;pointer-events:auto}
+#automations .snd{display:none}   /* screen recordings, no sound */
 
 /* the 9 to 5: one number at a time, and scrolling through turns to the next */
 .wins .pin{justify-content:center;padding-bottom:clamp(3rem,8vh,5rem)}
@@ -322,6 +323,22 @@ textarea{min-height:5.5rem;resize:vertical}
     </div></div>
   </div></section>
 
+  <section class="scene hold wide reels" id="automations" data-scene style="--s-bg:#10153F;--s-ink:#F6F1E5;--s-acc:#3EE6A8"><div class="pin">
+    <div class="txt">
+      <p class="kind"><i></i>Automations</p>
+      <h2 class="title mid">The plumbing behind my own products.</h2>
+      <p class="sum">Leads, payments and check-ins that run themselves. Recorded on my own systems with sample data.</p>
+      <div class="tabs" role="tablist" aria-label="Pick an automation">
+        <button type="button" role="tab" aria-selected="true">Lead flow <span>Form, saved, alert, reply: in seconds</span></button>
+        <button type="button" role="tab" aria-selected="false">Nudge back office <span>Store purchases to a live dashboard</span></button>
+      </div>
+    </div>
+    <div class="stage-wrap"><div class="stage">
+      <video class="on" src="work/auto-leads.mp4" poster="work/auto-leads.jpg" preload="none" muted playsinline controls aria-label="A visitor fills in the contact form; the lead appears in the admin's notifications and lead list"></video>
+      <video src="work/auto-nudge.mp4" poster="work/auto-nudge.jpg" preload="none" muted playsinline controls aria-label="Nudge's admin dashboard: revenue after store fees, paying users by platform, and a subscriber list with renewal dates"></video>
+    </div></div>
+  </div></section>
+
   <section class="scene hold wins" id="day" data-scene style="--s-bg:#F6F1E5;--s-ink:#161B6E;--s-acc:#2937E0"><div class="pin">
     <h2 class="kind"><i></i>Wins from the 9 to 5</h2>
     <div class="win" id="win"><b class="fig"></b><strong></strong><span class="why"></span></div>
@@ -336,6 +353,7 @@ textarea{min-height:5.5rem;resize:vertical}
       <button type="button" data-contact="an app"><h3>An app</h3><span>iOS, Android or web, from the first screen to the store.</span><b>from $500</b></button>
       <button type="button" data-contact="a Roblox game"><h3>A Roblox game</h3><span>A custom game, built once and published to your group.</span><b>from $500</b></button>
       <button type="button" data-contact="a website"><h3>A website</h3><span>Landing pages, storefronts, booking. Built and hosted.</span><b>get a quote</b></button>
+      <button type="button" data-contact="an automation"><h3>An automation</h3><span>Leads, CRM, tracking and AI tools, wired together. Fixed price.</span><b>get a quote</b></button>
     </div>
   </section>
 
@@ -629,19 +647,22 @@ function Windows(canvas,slot,linesFor){
 /* Screens play silently while you are on them. One "Sound" at a time. Reels run one after another. */
 (function(){
   const stages=[...document.querySelectorAll(".stage")];
-  const reelStage=document.querySelector(".reels .stage"),reels=[...reelStage.querySelectorAll("video")],tabs=[...document.querySelectorAll(".tabs button")];
   const cur=st=>st.querySelector("video.on")||st.querySelector("video");
-  function showReel(n){
-    reels.forEach((v,i)=>{v.classList.toggle("on",i===n);if(i!==n){v.pause();v.muted=true}});
-    tabs.forEach((b,i)=>b.setAttribute("aria-selected",i===n));
-    const v=reels[n];try{v.currentTime=0}catch(e){}
-    if(calm||saver)return;
-    v.muted=reelStage.dataset.sound!=="1";
-    if(reelStage.dataset.live==="1")v.play().catch(()=>{});
-  }
-  tabs.forEach((b,i)=>b.addEventListener("click",()=>showReel(i)));
+  /* Each tabbed scene (.reels: the motion videos, the automations) runs its own tabs and its own playlist. */
+  document.querySelectorAll(".reels").forEach(sec=>{
+    const reelStage=sec.querySelector(".stage"),reels=[...reelStage.querySelectorAll("video")],tabs=[...sec.querySelectorAll(".tabs button")];
+    function showReel(n){
+      reels.forEach((v,i)=>{v.classList.toggle("on",i===n);if(i!==n){v.pause();v.muted=true}});
+      tabs.forEach((b,i)=>b.setAttribute("aria-selected",i===n));
+      const v=reels[n];try{v.currentTime=0}catch(e){}
+      if(calm||saver)return;
+      v.muted=reelStage.dataset.sound!=="1";
+      if(reelStage.dataset.live==="1")v.play().catch(()=>{});
+    }
+    tabs.forEach((b,i)=>b.addEventListener("click",()=>showReel(i)));
+    if(!(calm||saver))reels.forEach((v,i)=>v.addEventListener("ended",()=>showReel((i+1)%reels.length)));
+  });
   if(calm||saver)return;                      // quiet mode: plain players with their own controls
-  reels.forEach((v,i)=>v.addEventListener("ended",()=>showReel((i+1)%reels.length)));
   function hush(st){st.dataset.sound="";st.querySelectorAll("video").forEach(v=>v.muted=true);const b=st.querySelector(".snd");b.setAttribute("aria-pressed","false");b.textContent="Sound"}
   stages.forEach(st=>{
     st.querySelectorAll("video").forEach(v=>v.controls=false);
