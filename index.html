@@ -122,11 +122,13 @@ html:not(.js) .pin,.still .pin{position:static;height:auto;min-height:100vh;min-
   transform:translateX(calc(var(--i)*var(--step)*-.72*(1 - var(--e,1)))) rotate(calc(var(--i)*7.5deg*(var(--e,1) + .16*var(--c,0))*var(--spread)))}
 @media (max-width:640px){.fan{--spread:.62}}
 
-/* Nudge: the phone comes up from the bottom edge, then the chat scrolls on inside it */
-.dock{flex:none;height:calc(clamp(16rem,40vh,25rem)*(.2 + .8*var(--e,1)));margin-top:clamp(2rem,5vh,3.5rem)}
-.phone{--phw:clamp(16rem,22vw,19rem);--phh:clamp(17.5rem,43vh,27rem);width:var(--phw);height:var(--phh);border:.4rem solid #26332F;border-bottom:0;border-radius:2.3rem 2.3rem 0 0;overflow:hidden;background:#0B100F}
-.phone img{width:100%;will-change:transform;   /* scrolls exactly as far as the screenshot is taller than the phone */
-  transform:translateY(calc(var(--c,0)*-1*max(0px,(var(--phw) - .8rem)*1.7778 - var(--phh) + .4rem)))}
+/* Nudge: a whole phone. It starts as a top edge peeking over the bottom of the window and comes up
+   until all of it is in view. --phh is the room left for it under the text, measured by fitPhone();
+   only on a very short screen is the phone taller than that room, and then it runs off the bottom. */
+.dock{display:flex;justify-content:center;align-items:flex-start;flex:none;height:calc(var(--phh,22rem)*(.16 + .84*var(--e,1)));margin:clamp(1.6rem,4vh,3rem) 0 clamp(1.2rem,3.5vh,2.4rem)}
+.fit .dock{flex:1 1 0;height:auto;min-height:19rem;max-height:min(62vh,42rem)}   /* the pose fitPhone() measures */
+.phone{flex:none;height:var(--phh,22rem);width:calc((var(--phh,22rem) - .8rem)*.5625 + .8rem);border:.4rem solid #26332F;border-radius:2.2rem;overflow:hidden;background:#0B100F}
+.phone img{width:100%;height:100%;object-fit:cover;object-position:top}
 
 /* games and reels: the screen grows out from under the title until it owns the window */
 .wide{--sw:min(100vw - 2*var(--pad),62rem,max(18rem,(100vh - 9vh - clamp(4.5rem,12vh,7.5rem) - 12.6rem)*1.7778))}
@@ -134,9 +136,9 @@ html:not(.js) .pin,.still .pin{position:static;height:auto;min-height:100vh;min-
 .stage-wrap{width:100%;display:flex;justify-content:center;align-items:flex-start;flex:none;height:calc(var(--sw)*.5625*var(--e,1));margin:calc(clamp(1.6rem,4vh,2.4rem)*var(--e,1)) 0 auto}
 .stage{position:relative;flex:none;width:var(--sw);height:calc(var(--sw)*.5625);border-radius:clamp(.8rem,1.5vw,1.4rem);overflow:hidden;background:#000;
   will-change:transform;transform-origin:50% 0;transform:scale(var(--e,1));opacity:calc(var(--e,1)*4)}
-@media (min-width:821px){   /* on a wide screen the two-line blurb folds away as the screen grows, so the video gets the room */
-  .wide .sum{overflow:hidden;height:calc(2.95em*(1 - var(--e,1)));margin-top:calc(1.5rem*(1 - var(--e,1)));opacity:calc(.84 - var(--e,1)*1.4)}
-  html:not(.js) .wide .sum,.still .wide .sum{height:auto;margin-top:1.5rem;opacity:.84}
+@media (min-width:821px){   /* on a wide screen the two-line blurb folds away as the scene opens, so the video or phone gets the room */
+  .wide .sum,.fold .sum{overflow:hidden;height:calc(2.95em*(1 - var(--e,1)));margin-top:calc(1.5rem*(1 - var(--e,1)));opacity:calc(.84 - var(--e,1)*1.4)}
+  html:not(.js) .wide .sum,.still .wide .sum,html:not(.js) .fold .sum,.still .fold .sum{height:auto;margin-top:1.5rem;opacity:.84}
 }
 .stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .snd{position:absolute;right:.8rem;bottom:.8rem;min-height:2.3rem;padding:0 .95rem;border-radius:99px;border:0;background:rgba(0,0,0,.62);color:#fff;font-weight:500;font-size:.85rem;cursor:pointer;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
@@ -248,7 +250,7 @@ textarea{min-height:5.5rem;resize:vertical}
     </div>
   </div></section>
 
-  <section class="scene hold bleed pop" id="nudge" data-scene style="--s-bg:#0B100F;--s-ink:#EEF4F1;--s-acc:#3EE6A8"><div class="pin">
+  <section class="scene hold bleed fold pop" id="nudge" data-scene style="--s-bg:#0B100F;--s-ink:#EEF4F1;--s-acc:#3EE6A8"><div class="pin">
     <div class="txt">
       <p class="kind"><i></i>02 · App</p>
       <h2 class="title">Nudge</h2>
@@ -424,8 +426,22 @@ function paint(){
   });
 }
 function ask(){if(!queued){queued=true;requestAnimationFrame(paint)}}
+/* The Nudge phone is as tall as the room left under its text once that scene is open.
+   Put the scene in its open pose for a moment, read the room, and put it back. */
+function fitPhone(){
+  if(calm)return;
+  const s=document.getElementById("nudge"),was=s.style.getPropertyValue("--e");
+  s.classList.add("fit");s.style.setProperty("--e","1");
+  const h=s.querySelector(".dock").getBoundingClientRect().height;
+  s.classList.remove("fit");s.style.setProperty("--e",was||"0");
+  if(h>0)s.style.setProperty("--phh",h.toFixed(1)+"px");
+}
+let fitT=0;
+addEventListener("resize",()=>{clearTimeout(fitT);fitT=setTimeout(()=>{fitPhone();ask()},160)});
+addEventListener("load",()=>{fitPhone();ask()});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitPhone);
 addEventListener("scroll",ask,{passive:true});
-addEventListener("load",ask);
+fitPhone();
 paint();
 
 /* A wall of windows. Most are dark. The lit ones spell a word, and the dot of the "i" is the lamp.
