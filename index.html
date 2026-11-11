@@ -447,10 +447,19 @@ paint();
 /* A wall of windows. Most are dark. The lit ones spell a word, and the dot of the "i" is the lamp.
    A few flick off and on, a neighbour's light comes on now and then, and the pointer leaves lamps on behind it. */
 const FACE='"Host Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif';
+/* The neighbours are up too. A lamp is yellow (hue 0, the page's own accent) or one of the five
+   things further down the page: Kitchen Table orange, Nudge mint, Cloud Gazing sky, Ashwick violet,
+   Bit Brawl red. Hue 6 is the white of a TV. To make the wall calmer, raise the gaps in step(). */
+const LAMPS=[null,[255,138,61],[62,230,168],[159,216,255],[210,139,255],[255,90,71],[255,255,255]],LAMPCSS=LAMPS.map(c=>c&&rgb(c));
+const anyHue=()=>Math.random()<.3?0:1+(Math.random()*5|0);
 function Windows(canvas,slot,linesFor){
   const ctx=canvas.getContext("2d"),host=canvas.closest(".scene"),TH=.5,DIM=.065;
-  let P=12,G=10,cols=0,rows=0,ox=0,cw=0,ch=0,cov,on,tgt,warm,fade,hot,wait;
-  let word=[],dark=[],live=new Set(),seen=false,all=true,raf=0,born=0,last=0,first=true,nextDim=0,nextLamp=0,inkCss="",accCss="";
+  let P=12,G=10,cols=0,rows=0,ox=0,cw=0,ch=0,cov,on,tgt,warm,fade,hot,wait,hue,solid,stay,quiet,now=0;
+  let word=[],byKey=[],dark=[],actors=[],live=new Set(),seen=false,all=true,raf=0,born=0,last=0,first=true,inkCss="",accCss="";
+  let nextDim=0,nextLamp=0,nextFlat=0,nextWalk=0,nextTV=0,nextWave=0,waveHue=0;
+  const keyOf=i=>i%cols+((i/cols)|0)*.55;        // a slanted line across the word, for the ripple
+  /* a light comes on in a dark window, stays on for `ms`, then goes out at rate f */
+  function lamp(i,h,f,ms){if(i<0||i>=cov.length||cov[i]>TH||quiet[i])return;warm[i]=1;fade[i]=f;hue[i]=h;solid[i]=0;stay[i]=now+(ms||0);live.add(i)}
   function build(){
     const r=canvas.getBoundingClientRect();
     if(r.width<2||(r.width===cw&&r.height===ch))return;
@@ -462,7 +471,15 @@ function Windows(canvas,slot,linesFor){
     ox=Math.round((canvas.width-cols*P)/2);
     const n=cols*rows;
     cov=new Float32Array(n);on=new Float32Array(n);tgt=new Float32Array(n);warm=new Float32Array(n);fade=new Float32Array(n);hot=new Uint8Array(n);wait=new Float32Array(n);
-    word=[];dark=[];live.clear();
+    hue=new Uint8Array(n);solid=new Uint8Array(n);stay=new Float64Array(n);quiet=new Uint8Array(n);
+    /* no neighbours behind the words and buttons: those windows stay dark so the text reads clean */
+    host.querySelectorAll(".say,.links,.clock,small").forEach(el=>{
+      const b=el.getBoundingClientRect();if(!b.width)return;
+      const qx0=Math.max(0,Math.floor(((b.left-r.left)*dpr-ox)/P)-1),qx1=Math.min(cols-1,Math.ceil(((b.right-r.left)*dpr-ox)/P)),
+            qy0=Math.max(0,Math.floor((b.top-r.top)*dpr/P)-1),qy1=Math.min(rows-1,Math.ceil((b.bottom-r.top)*dpr/P));
+      for(let y=qy0;y<=qy1;y++)for(let x=qx0;x<=qx1;x++)quiet[y*cols+x]=1;
+    });
+    word=[];dark=[];actors=[];live.clear();
     /* draw the word small, four samples to a window, and read how much of each window it covers */
     const S=4,off=document.createElement("canvas");off.width=cols*S;off.height=rows*S;
     const o=off.getContext("2d",{willReadFrequently:true}),s=slot.getBoundingClientRect(),k=dpr*S/P;
@@ -497,18 +514,24 @@ function Windows(canvas,slot,linesFor){
     });
     const span=Math.max(1,c1-c0);
     for(const i of word){tgt[i]=1;if(first&&!calm){wait[i]=140+(i%cols-c0)/span*640+Math.random()*540;live.add(i)}else on[i]=1}
+    byKey=word.slice().sort((a,b)=>keyOf(a)-keyOf(b));
     first=false;born=last=performance.now();all=true;
+    nextFlat=born+2600;nextWalk=born+1700;nextTV=born+2200;nextWave=born+3600;   // the neighbours wait for the name to finish lighting
     host.classList.add("lit");kick();
   }
   function cell(i,fresh){
-    const x=ox+(i%cols)*P,y=((i/cols)|0)*P,q=(P-G)>>1,w=warm[i];
+    const x=ox+(i%cols)*P,y=((i/cols)|0)*P,q=(P-G)>>1,w=warm[i],h=hue[i];
     if(!fresh)ctx.clearRect(x,y,P,P);
-    if(cov[i]>TH){                           // a window in the word: cream, or warming to the lamp colour
-      const v=hot[i]?1:w;
-      ctx.globalAlpha=.1+.9*on[i];ctx.fillStyle=v>.98?accCss:v>.02?rgb(lerp(tone.ink,tone.acc,v)):inkCss;ctx.fillRect(x+q,y+q,G,G);
-    }else{                                   // a dark window, maybe with a lamp in it that shrinks as it goes out
+    if(cov[i]>TH){                           // a window in the word: cream, or warming to a lamp colour
+      ctx.globalAlpha=.1+.9*on[i];
+      ctx.fillStyle=hot[i]?accCss:w>.02?rgb(lerp(tone.ink,h?LAMPS[h]:tone.acc,w)):inkCss;ctx.fillRect(x+q,y+q,G,G);
+    }else{                                   // a dark window, maybe with a light on in it
       ctx.globalAlpha=DIM;ctx.fillStyle=inkCss;ctx.fillRect(x+q,y+q,G,G);
-      if(w>.02){const s=Math.max(1,Math.round(G*Math.sqrt(w))),o=(P-s)>>1;ctx.globalAlpha=Math.min(1,w*5);ctx.fillStyle=accCss;ctx.fillRect(x+o,y+o,s,s)}
+      if(w>.02){
+        ctx.fillStyle=h?LAMPCSS[h]:accCss;
+        if(solid[i]){ctx.globalAlpha=w;ctx.fillRect(x+q,y+q,G,G)}                 // a TV: the whole window, brighter and dimmer
+        else{const s=Math.max(1,Math.round(G*Math.sqrt(w))),o=(P-s)>>1;ctx.globalAlpha=Math.min(1,w*5);ctx.fillRect(x+o,y+o,s,s)}   // a lamp: shrinks as it goes out
+      }
     }
   }
   function step(t){
@@ -516,17 +539,42 @@ function Windows(canvas,slot,linesFor){
     const dt=clamp((t-last)/16.67,.2,4);last=t;
     if(all){all=false;inkCss=rgb(tone.ink);accCss=rgb(tone.acc);ctx.clearRect(0,0,canvas.width,canvas.height);for(let i=0;i<cov.length;i++)cell(i,true)}
     if(calm)return;
-    const age=t-born;
+    const age=t-born;now=t;
     if(age>1700&&t>nextDim&&word.length){nextDim=t+60+Math.random()*190;const i=word[Math.random()*word.length|0];if(!hot[i]&&tgt[i]===1){tgt[i]=0;dark.push([i,t+900+Math.random()*3800]);live.add(i)}}
     for(let j=dark.length-1;j>=0;j--)if(t>dark[j][1]){tgt[dark[j][0]]=1;live.add(dark[j][0]);dark.splice(j,1)}
-    if(t>nextLamp){nextLamp=t+240+Math.random()*640;const i=Math.random()*cov.length|0;if(cov[i]<=TH&&warm[i]===0){warm[i]=1;fade[i]=.989;live.add(i)}}
+    /* a lamp comes on somewhere */
+    if(t>nextLamp){nextLamp=t+140+Math.random()*300;const i=Math.random()*cov.length|0;if(warm[i]===0)lamp(i,anyHue(),.95,700+Math.random()*2600)}
+    /* a whole flat lights up: a small block in one colour */
+    if(t>nextFlat){nextFlat=t+1900+Math.random()*2600;const x=Math.random()*(cols-3)|0,y=Math.random()*(rows-2)|0,h=anyHue(),bw=2+(Math.random()*2|0),bh=1+(Math.random()*2|0),ms=1800+Math.random()*2600;
+      for(let v=0;v<bh;v++)for(let u=0;u<bw;u++)lamp((y+v)*cols+x+u,h,.95,ms+Math.random()*500)}
+    /* someone walks down a hallway, or takes the lift: a light that travels and passes behind the name */
+    if(t>nextWalk){nextWalk=t+1500+Math.random()*2600;const up=Math.random()<.3,dir=Math.random()<.5?-1:1;
+      actors.push({k:1,x:Math.random()*cols|0,y:Math.random()*rows|0,dx:up?0:dir,dy:up?dir:0,left:10+(Math.random()*26|0),h:anyHue(),at:t,gap:50+Math.random()*50})}
+    /* a TV is on in one window */
+    if(t>nextTV){nextTV=t+2600+Math.random()*3800;const i=Math.random()*cov.length|0;if(cov[i]<=TH&&!quiet[i])actors.push({k:2,i,at:t,until:t+2600+Math.random()*3400})}
+    /* a ripple of one colour runs through the name */
+    if(t>nextWave&&byKey.length){nextWave=t+7000+Math.random()*4500;waveHue=waveHue%5+1;actors.push({k:3,p:0,front:keyOf(byKey[0])-1,h:waveHue,last:t})}
+    for(let a=actors.length-1;a>=0;a--){
+      const A=actors[a];
+      if(A.k===1){
+        while(t>=A.at&&A.left>0){A.at+=A.gap;A.x+=A.dx;A.y+=A.dy;A.left--;if(A.x<0||A.x>=cols||A.y<0||A.y>=rows){A.left=0;break}lamp(A.y*cols+A.x,A.h,.9)}
+        if(A.left<=0)actors.splice(a,1);
+      }else if(A.k===2){
+        if(t>A.until)actors.splice(a,1);
+        else if(t>=A.at){A.at=t+60+Math.random()*130;const i=A.i;warm[i]=.45+Math.random()*.55;fade[i]=.97;stay[i]=0;hue[i]=Math.random()<.5?6:3;solid[i]=1;live.add(i)}
+      }else{
+        A.front+=(t-A.last)*.045;A.last=t;       // 45 windows a second
+        while(A.p<byKey.length&&keyOf(byKey[A.p])<A.front){const i=byKey[A.p++];if(!hot[i]){warm[i]=1;fade[i]=.93;stay[i]=0;hue[i]=A.h;live.add(i)}}
+        if(A.p>=byKey.length)actors.splice(a,1);
+      }
+    }
     for(const i of live){
       let busy=false;
       if(cov[i]>TH){
         const g=age<wait[i]?0:tgt[i];let a=on[i];
         if(a!==g){a+=(g-a)*(1-Math.pow(.78,dt));if(Math.abs(g-a)<.015)a=g;on[i]=a;busy=true}else if(age<wait[i])busy=true;
       }
-      if(warm[i]>0){warm[i]*=Math.pow(fade[i],dt);if(warm[i]<.02)warm[i]=0;busy=true}
+      if(warm[i]>0){if(t>=stay[i]){warm[i]*=Math.pow(fade[i],dt);if(warm[i]<.02)warm[i]=0}busy=true}
       cell(i);if(!busy)live.delete(i);
     }
     if(seen&&!document.hidden)raf=requestAnimationFrame(step);
@@ -541,7 +589,7 @@ function Windows(canvas,slot,linesFor){
       for(let x=Math.max(0,Math.floor(px-R));x<=Math.min(cols-1,Math.ceil(px+R));x++){
         const dd=Math.hypot(x+.5-px,y+.5-py);if(dd>R)continue;
         const i=y*cols+x,w=Math.min(1,(1-dd/R)*1.5);
-        if(w>warm[i]){warm[i]=w;fade[i]=.945;live.add(i)}
+        if(w>warm[i]){warm[i]=w;fade[i]=.945;stay[i]=0;hue[i]=0;solid[i]=0;live.add(i)}
       }
     kick();
   }
