@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wil · things I've made</title>
+<meta name="description" content="Apps, printable worksheets and Roblox games built by Wil (@wilcodes), a developer and dad of two. Everything here is live.">
+<meta property="og:title" content="Wil · things I've made">
+<meta property="og:description" content="Apps, printable worksheets and Roblox games. Everything here is live.">
+<meta property="og:image" content="work/kt.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23C0511D'/%3E%3Ctext x='32' y='45' font-family='Arial Black,Arial,sans-serif' font-weight='900' font-size='38' text-anchor='middle' fill='%23FFF8EC'%3EW%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* One page, no build step. To add a creation: copy a <article class="card"> block. Only LIVE things go here. */
+:root{
+  --ground:#F6EFE3; --paper:#FFFDF8; --ink:#22201C; --muted:#6F665B; --edge:#DDD2BF;
+  --accent:#C0511D; --accent-ink:#FFF8EC; --live:#1F7A4D;
+  --shadow:0 18px 36px -22px rgba(70,48,14,.45), 0 2px 5px rgba(70,48,14,.06);
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:Inter,system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ground:#1C1916; --paper:#26221E; --ink:#F3ECE0; --muted:#A99F92; --edge:#3A342D;
+    --accent:#E8793F; --accent-ink:#1C1916; --live:#5FD39A;
+    --shadow:0 18px 36px -22px rgba(0,0,0,.8);
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);line-height:1.55;-webkit-font-smoothing:antialiased}
+img,video{display:block;max-width:100%}
+a{color:inherit}
+h1,h2,h3{font-family:var(--display);font-weight:800;letter-spacing:-.025em;line-height:1.05;margin:0}
+.wrap{max-width:60rem;margin:0 auto;padding:0 1rem}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:.4rem}
+
+/* top */
+.top{padding:3.5rem 0 1.5rem;text-align:center}
+.mono{width:4.5rem;height:4.5rem;border-radius:1.4rem;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;
+  font-family:var(--display);font-weight:800;font-size:2.4rem;margin:0 auto 1.1rem;transform:rotate(-4deg);box-shadow:var(--shadow)}
+.top h1{font-size:clamp(2.4rem,7vw,3.6rem)}
+.top p{max-width:32rem;margin:.9rem auto 1.4rem;color:var(--muted);font-size:1.08rem;text-wrap:balance}
+.pills{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center}
+.pill{display:inline-flex;align-items:center;gap:.45rem;min-height:2.75rem;padding:.55rem 1.1rem;border-radius:99px;border:1.5px solid var(--edge);
+  background:var(--paper);color:var(--ink);font:600 .95rem var(--body);text-decoration:none;cursor:pointer;transition:transform .15s,border-color .15s}
+.pill:hover{transform:translateY(-2px);border-color:var(--accent)}
+.pill.main{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* sections */
+section{padding:2rem 0 .5rem}
+.label{display:flex;align-items:baseline;gap:.7rem;margin:0 0 1rem}
+.label h2{font-size:1.5rem}
+.label span{color:var(--muted);font-size:.9rem}
+.grid{display:grid;gap:1rem}
+@media (min-width:640px){.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}}
+
+/* cards */
+.card{background:var(--paper);border:1.5px solid var(--edge);border-radius:1.25rem;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.media{aspect-ratio:16/10;background:#111;position:relative;overflow:hidden}
+.media>img,.media>video{width:100%;height:100%;object-fit:cover}
+.media.kt{background:#F3EBDD}.media.kt img{object-position:top}
+.media.nudge{background:radial-gradient(28rem 16rem at 50% 120%,rgba(62,230,168,.28),transparent 65%),#0B100F}
+.media.nudge img{position:absolute;left:50%;top:9%;width:46%;height:auto;transform:translateX(-50%);border-radius:1.1rem;
+  border:3px solid #24302c;box-shadow:0 18px 40px #000a}
+.body{padding:1.05rem 1.15rem 1.15rem;display:flex;flex-direction:column;gap:.45rem;flex:1}
+.kind{display:flex;align-items:center;justify-content:space-between;gap:.5rem;font-size:.74rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.live{display:inline-flex;align-items:center;gap:.4rem;color:var(--live);letter-spacing:.04em}
+.live i{width:.5rem;height:.5rem;border-radius:50%;background:currentColor}
+.card h3{font-size:1.35rem}
+.card p{margin:0;color:var(--muted);font-size:.95rem}
+.links{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:auto;padding-top:.7rem}
+.btn{display:inline-flex;align-items:center;min-height:2.6rem;padding:.45rem .95rem;border-radius:.8rem;border:1.5px solid var(--edge);
+  font-weight:600;font-size:.9rem;text-decoration:none;transition:border-color .15s,transform .15s}
+.btn:hover{border-color:var(--accent);transform:translateY(-1px)}
+.btn.main{background:var(--ink);border-color:var(--ink);color:var(--ground)}
+.reel .body{padding:.75rem .95rem .9rem;gap:.1rem}
+.reel h3{font-size:1.05rem}
+.reel .media{aspect-ratio:16/9}
+
+/* day job: one tile, one win at a time */
+.day{background:var(--paper);border:1.5px dashed var(--edge);border-radius:1.25rem;padding:1.1rem 1.25rem;display:grid;grid-template-columns:4.2rem 1fr;gap:1rem;align-items:center;min-height:6.2rem}
+.day b{font-family:var(--display);font-size:1.6rem;color:var(--accent);text-align:center}
+.day strong{display:block}
+.day span{color:var(--muted);font-size:.93rem}
+.day.flip>*{animation:flip .5s ease}
+@keyframes flip{from{opacity:0;transform:translateY(.5rem)}to{opacity:1;transform:none}}
+
+/* foot */
+footer{text-align:center;padding:3rem 0 3.5rem;color:var(--muted);font-size:.9rem}
+footer h2{color:var(--ink);font-size:1.7rem;margin-bottom:1rem}
+footer small{display:block;margin-top:1.6rem}
+
+/* contact */
+dialog{border:1.5px solid var(--edge);border-radius:1.25rem;background:var(--paper);color:var(--ink);padding:1.4rem;width:min(26rem,calc(100vw - 2rem));box-shadow:0 30px 80px #0007}
+dialog::backdrop{background:#0009}
+dialog h2{font-size:1.5rem;margin-bottom:.3rem}
+dialog p{margin:0 0 1rem;color:var(--muted);font-size:.93rem}
+label{display:block;font-size:.82rem;font-weight:600;margin:.7rem 0 .25rem}
+input,textarea{width:100%;font:inherit;font-size:1rem;color:var(--ink);background:var(--ground);border:1.5px solid var(--edge);border-radius:.7rem;padding:.65rem .75rem}
+textarea{min-height:6rem;resize:vertical}
+.hp{position:absolute;left:-999rem}
+.row{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1rem}
+.note{min-height:1.3rem;margin:.6rem 0 0;font-size:.88rem}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header class="top wrap">
+  <div class="mono" aria-hidden="true">W</div>
+  <h1>Hey, I'm Wil.</h1>
+  <p>Developer by day, dad of two by night, and I build things after bedtime. Everything on this page is live. Go poke at it.</p>
+  <div class="pills">
+    <button class="pill main" data-contact>Reach out</button>
+    <a class="pill" href="https://x.com/wilcodes" target="_blank" rel="noopener">@wilcodes on X</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <div class="label"><h2>Apps</h2><span>on the App Store</span></div>
+    <div class="grid two">
+
+      <article class="card">
+        <div class="media kt"><img src="work/kt.jpg" alt="A Kitchen Table grade 1 math workbook cover beside three of its worksheet pages" loading="lazy"></div>
+        <div class="body">
+          <div class="kind">App · Website · Printables <span class="live"><i></i>live</span></div>
+          <h3>Kitchen Table Worksheets</h3>
+          <p>Printable worksheets for pre-K to grade 8. Every sheet is made fresh when you print it, and the answer key comes with it.</p>
+          <div class="links">
+            <a class="btn main" href="https://ktworksheets.com" target="_blank" rel="noopener">ktworksheets.com</a>
+            <a class="btn" href="https://apps.apple.com/app/kitchen-table-worksheets/id6817992308" target="_blank" rel="noopener">App Store</a>
+            <a class="btn" href="https://www.etsy.com/shop/KitchenTableWorkbook" target="_blank" rel="noopener">Etsy shop</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="media nudge"><img src="work/nudge-phone.jpg" alt="The Nudge app: a chat where the coach sets check-in times for a running goal" loading="lazy"></div>
+        <div class="body">
+          <div class="kind">App <span class="live"><i></i>live</span></div>
+          <h3>Nudge</h3>
+          <p>An AI coach that checks in at the times you pick, and runs each month as a 30-day season.</p>
+          <div class="links">
+            <a class="btn main" href="https://hellonudge.me" target="_blank" rel="noopener">hellonudge.me</a>
+            <a class="btn" href="https://apps.apple.com/app/id6827351985" target="_blank" rel="noopener">App Store</a>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="label"><h2>Roblox games</h2><span>free to play</span></div>
+    <div class="grid three">
+
+      <article class="card">
+        <div class="media"><video src="work/cloud-gazing.mp4" poster="work/cloud-gazing.jpg" preload="none" controls playsinline></video></div>
+        <div class="body">
+          <div class="kind">Roblox <span class="live"><i></i>live</span></div>
+          <h3>Cloud Gazing</h3>
+          <p>Lie on a hill and fill your Cloud Book. Every server's sky runs on live weather from a real place.</p>
+          <div class="links"><a class="btn main" href="https://www.roblox.com/games/82963087289308" target="_blank" rel="noopener">Play on Roblox</a></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="media"><video src="work/ashwick.mp4" poster="work/ashwick.jpg" preload="none" controls playsinline></video></div>
+        <div class="body">
+          <div class="kind">Roblox <span class="live"><i></i>live</span></div>
+          <h3>Ashwick Survivors</h3>
+          <p>Pixel-art survivors that turns into an action RPG: waves, loot, and a dungeon underneath.</p>
+          <div class="links"><a class="btn main" href="https://www.roblox.com/games/114819087690317" target="_blank" rel="noopener">Play on Roblox</a></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="media"><video src="work/bit-brawl.mp4" poster="work/bit-brawl.jpg" preload="none" controls playsinline></video></div>
+        <div class="body">
+          <div class="kind">Roblox <span class="live"><i></i>live</span></div>
+          <h3>Bit Brawl</h3>
+          <p>A pixel platform fighter: combos, outfits, and a five-level adventure mode.</p>
+          <div class="links"><a class="btn main" href="https://www.roblox.com/games/95081502445110" target="_blank" rel="noopener">Play on Roblox</a></div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="label"><h2>Reels</h2><span>motion videos, made in code</span></div>
+    <div class="grid three">
+      <article class="card reel">
+        <div class="media"><video src="work/nudge-reel.mp4" poster="work/nudge-reel.jpg" preload="none" controls playsinline></video></div>
+        <div class="body"><h3>Nudge</h3><p>App launch</p></div>
+      </article>
+      <article class="card reel">
+        <div class="media"><video src="work/kt-reel.mp4" poster="work/kt-reel.jpg" preload="none" controls playsinline></video></div>
+        <div class="body"><h3>Kitchen Table</h3><p>Product reel</p></div>
+      </article>
+      <article class="card reel">
+        <div class="media"><video src="work/carriercents-reel.mp4" poster="work/carriercents-reel.jpg" preload="none" controls playsinline></video></div>
+        <div class="body"><h3>CarrierCents</h3><p>App walkthrough</p></div>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <div class="label"><h2>By day</h2><span>wins from the 9 to 5</span></div>
+    <div class="day" id="day" aria-live="off"><b></b><div><strong></strong><span></span></div></div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <h2>Want to say hi?</h2>
+  <div class="pills">
+    <button class="pill main" data-contact>Reach out</button>
+    <a class="pill" href="https://x.com/wilcodes" target="_blank" rel="noopener">@wilcodes on X</a>
+  </div>
+  <small>© 2026 Wilcodes LLC</small>
+</footer>
+
+<dialog id="contact" aria-labelledby="ct">
+  <form id="form">
+    <h2 id="ct">Reach out</h2>
+    <p>Leave your email and a note. I read every one and reply myself.</p>
+    <label for="n">Your name</label><input id="n" name="name" autocomplete="name" required>
+    <label for="e">Your email</label><input id="e" name="email" type="email" autocomplete="email" required>
+    <label for="m">Note (optional)</label><textarea id="m" name="description"></textarea>
+    <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <p class="note" id="note" role="status"></p>
+    <div class="row">
+      <button type="button" class="pill" id="close">Close</button>
+      <button class="pill main" id="send">Send</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+/* Day-job wins. Never name the employer, its sites or its clients. */
+const wins=[
+  ["10×","Faster game loads","Reformatted the game images and cut load time tenfold."],
+  ["10k","Players unblocked","Fixed a long-standing game error that hit up to 10,000 users."],
+  ["ADS","Saved the ad accounts","Cleared critical AdSense errors before the accounts got shut down. One was a single blank space in robots.txt."],
+  ["20m","Time-tracking extension","Built a browser extension that saves the team 10 to 20 minutes a day."],
+  ["0","Zero-error migration","Helped write the database migration scripts that went live at midnight with no user errors."],
+  ["24/7","Health alerts","Server alerts to email, Slack and Teams, plus a one-click email service restart."],
+  ["1","Login bug squashed","Solved a long-standing bug where auto-login links signed people in as the wrong user."],
+  ["NEW","Standalone offers site","Built a separate offers site from scratch, alongside the main platform."]
+];
+const day=document.getElementById("day");let wi=Math.floor(Math.random()*wins.length);
+function showWin(){const w=wins[wi%wins.length];wi++;
+  day.querySelector("b").textContent=w[0];day.querySelector("strong").textContent=w[1];day.querySelector("span").textContent=w[2];
+  day.classList.remove("flip");void day.offsetWidth;day.classList.add("flip");}
+showWin();
+if(!matchMedia("(prefers-reduced-motion: reduce)").matches)setInterval(showWin,3500);
+
+/* Only one video plays at a time. */
+const vids=[...document.querySelectorAll("video")];
+vids.forEach(v=>v.addEventListener("play",()=>vids.forEach(o=>{if(o!==v)o.pause()})));
+
+/* Contact: posts to the existing wilzil.dev lead endpoint (emails Wil, sends the visitor a short thanks). */
+const dlg=document.getElementById("contact"),form=document.getElementById("form"),note=document.getElementById("note"),send=document.getElementById("send");
+const ENDPOINT="https://wilzil.dev/api/contact",FALLBACK="wil@wilzil.dev";
+document.querySelectorAll("[data-contact]").forEach(b=>b.addEventListener("click",()=>{note.textContent="";dlg.showModal()}));
+document.getElementById("close").addEventListener("click",()=>dlg.close());
+dlg.addEventListener("click",e=>{if(e.target===dlg)dlg.close()});
+form.addEventListener("submit",async e=>{
+  e.preventDefault();
+  const d=Object.fromEntries(new FormData(form));
+  if(d.website){dlg.close();return}            // bots fill the hidden field
+  delete d.website;send.disabled=true;note.textContent="Sending…";
+  try{
+    // text/plain + no-cors: works from any host without the server needing CORS headers
+    await fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(d)});
+    note.textContent="Got it. I'll reply by email.";form.reset();
+  }catch(err){
+    note.innerHTML='That didn\'t send. Email me at <a href="mailto:'+FALLBACK+'">'+FALLBACK+'</a>.';
+  }
+  send.disabled=false;
+});
+</script>
+</body>
+</html>
