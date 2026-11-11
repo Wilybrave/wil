@@ -6,10 +6,21 @@
 <title>Wil · things I've made</title>
 <meta name="description" content="Apps, printable worksheets and Roblox games built by Wil (@wilcodes), a developer and dad of two. Everything here is live.">
 <meta name="theme-color" content="#2937E0">
+<link rel="canonical" href="https://wil.wilcodes.workers.dev/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://wil.wilcodes.workers.dev/">
+<meta property="og:site_name" content="Wil">
 <meta property="og:title" content="Wil · things I've made">
 <meta property="og:description" content="Apps, printable worksheets and Roblox games. Everything here is live.">
-<meta property="og:image" content="work/kt.jpg">
+<meta property="og:image" content="https://wil.wilcodes.workers.dev/work/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Wil, written in lit windows, next to: Developer by day, dad of two. I build things after bedtime.">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:creator" content="@wilcodes">
+<meta name="twitter:title" content="Wil · things I've made">
+<meta name="twitter:description" content="Apps, printable worksheets and Roblox games. Everything here is live.">
+<meta name="twitter:image" content="https://wil.wilcodes.workers.dev/work/og.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232937E0'/%3E%3Crect x='13' y='13' width='17' height='17' rx='2' fill='%23F6F1E5'/%3E%3Crect x='34' y='13' width='17' height='17' rx='2' fill='%23FFD43D'/%3E%3Crect x='13' y='34' width='17' height='17' rx='2' fill='%23F6F1E5'/%3E%3Crect x='34' y='34' width='17' height='17' rx='2' fill='%23F6F1E5'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -451,6 +462,7 @@ const FACE='"Host Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif';
    things further down the page: Kitchen Table orange, Nudge mint, Cloud Gazing sky, Ashwick violet,
    Bit Brawl red. Hue 6 is the white of a TV. To make the wall calmer, raise the gaps in step(). */
 const LAMPS=[null,[255,138,61],[62,230,168],[159,216,255],[210,139,255],[255,90,71],[255,255,255]],LAMPCSS=LAMPS.map(c=>c&&rgb(c));
+const TRAIL=[0,1,5,4,3,2];   // yellow, orange, red, violet, sky, mint
 const anyHue=()=>Math.random()<.3?0:1+(Math.random()*5|0);
 function Windows(canvas,slot,linesFor){
   const ctx=canvas.getContext("2d"),host=canvas.closest(".scene"),TH=.5,DIM=.065;
@@ -580,16 +592,19 @@ function Windows(canvas,slot,linesFor){
     if(seen&&!document.hidden)raf=requestAnimationFrame(step);
   }
   function kick(){if(!raf&&cov&&seen)raf=requestAnimationFrame(step)}
+  let trailX=null,trailY=null,trailRun=0;
   function poke(cx,cy){
     if(calm||!seen||!cov)return;
     const r=canvas.getBoundingClientRect();
     if(cy<r.top-40||cy>r.bottom+40)return;
     const k=canvas.width/r.width,px=((cx-r.left)*k-ox)/P,py=(cy-r.top)*k/P,R=3.2;
+    if(trailX!==null)trailRun+=Math.hypot(px-trailX,py-trailY);trailX=px;trailY=py;
+    const th=TRAIL[(trailRun/2.2|0)%TRAIL.length];   // the trail walks through the lamp colours, a new one every couple of windows
     for(let y=Math.max(0,Math.floor(py-R));y<=Math.min(rows-1,Math.ceil(py+R));y++)
       for(let x=Math.max(0,Math.floor(px-R));x<=Math.min(cols-1,Math.ceil(px+R));x++){
         const dd=Math.hypot(x+.5-px,y+.5-py);if(dd>R)continue;
         const i=y*cols+x,w=Math.min(1,(1-dd/R)*1.5);
-        if(w>warm[i]){warm[i]=w;fade[i]=.945;stay[i]=0;hue[i]=0;solid[i]=0;live.add(i)}
+        if(w>warm[i]){warm[i]=w;fade[i]=.945;stay[i]=0;hue[i]=th;solid[i]=0;live.add(i)}
       }
     kick();
   }
